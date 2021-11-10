@@ -7,7 +7,6 @@ namespace LinkedListLibray
         private Node _head;
         public LinkedList()
         {
-
         }
         public LinkedList(int value)
         {
@@ -60,13 +59,8 @@ namespace LinkedListLibray
         }
         public int GetLast()
         {
-            Node current = _head;
-            int lastValue = current.Value;
-            while (current.Next != null)
-            {
-                current = current.Next;
-                lastValue = current.Value;
-            }
+            int lastValue = Get(GetLength() - 1);
+
 
             return lastValue;
         }
@@ -152,41 +146,13 @@ namespace LinkedListLibray
         }
         public int IndexMin()
         {
-            int length = GetLength();
-            Node current = _head;
-            int min = current.Value;
-            int count = 0;
-            int indexMin = 0;
-            while (count < length)
-            {
-                if (min > current.Value)
-                {
-                    min = current.Value;
-                    indexMin = count;
-                }
-                count++;
-                current = current.Next;
-            }
-            return indexMin;
+            int idx = IndexOf(Min());
+            return idx;
         }
         public int IndexMax()
         {
-            int length = GetLength();
-            Node current = _head;
-            int max = current.Value;
-            int count = 0;
-            int indexMax = 0;
-            while (count < length)
-            {
-                if (max < current.Value)
-                {
-                    max = current.Value;
-                    indexMax = count;
-                }
-                count++;
-                current = current.Next;
-            }
-            return indexMax;
+            int idx = IndexOf(Max());
+            return idx;
         }
         public void AddFirst(int value)
         {
@@ -196,15 +162,12 @@ namespace LinkedListLibray
         }
         public void AddFirst(LinkedList linkedList)
         {
+            if (GetLength() == 0)
+                throw new Exception();
             Node tmp = _head;
-            Node headUser = linkedList._head;
-            _head = headUser;
-            int lengthUser = linkedList.GetLength();
-            for (int i = 0; i < lengthUser -1; i++)
-            {
-                headUser = headUser.Next;
-            }
-            headUser.Next = tmp;
+            _head = linkedList._head;
+            Node t = GetNode(GetLength() - 1);
+            t.Next = tmp;
         }
         public void AddLast(int value)
         {
@@ -219,13 +182,8 @@ namespace LinkedListLibray
         }
         public void AddLast(LinkedList linkedList)
         {
-            Node current = _head;
-            int length = GetLength();
-            Node headUser = linkedList._head;
-            for (int i = 0; i < length - 1; i++)
-            {
-                current = current.Next;
-            }
+            Node current = GetNode(GetLength() - 1);
+            Node headUser = linkedList._head;            
             current.Next = headUser;
         }
         public void AddAt(int idx, int value)
@@ -244,25 +202,23 @@ namespace LinkedListLibray
         }
         public void AddAt(int idx, LinkedList linkedList)
         {
-            Node current = _head;
-            Node headUser = linkedList._head;
-            int count = 0;
-            int length = GetLength();
             if (idx == 0)
                 AddFirst(linkedList);
-            while (count != idx - 1)
+            else if (idx == GetLength() - 1)
+                AddLast(linkedList);
+            else
             {
-                current = current.Next;
-                count++;
+                Node tmpIdx = GetNode(idx);
+                Node tmpNext = GetNode(idx + 1);
+                int length = linkedList.GetLength();
+                Node headUser = linkedList._head;
+                for (int i = idx; i < length - 1 ; i++)
+                {
+                    tmpIdx.Next = headUser;
+                    headUser = headUser.Next;
+                }
+                headUser.Next = tmpNext;
             }
-            Node tmp = current.Next;
-            current.Next = headUser;
-            int lengthUser = linkedList.GetLength();
-            for (int i = 0; i < lengthUser - 1; i++)
-            {
-                headUser = headUser.Next;
-            }
-            headUser.Next = tmp;
         }
         public void RemoveFirst()
         {
@@ -277,7 +233,7 @@ namespace LinkedListLibray
         }
         public void RemoveLast()
         {
-            int length = GetLength();
+            int length = GetLength() - 1;
             GetNode(length - 1).Next = null;
         }
         public void RemoveLastMultiple(int n)
@@ -293,13 +249,13 @@ namespace LinkedListLibray
         {
             if (idx == 0)
                 RemoveFirst();
-            else if (idx < GetLength() - 1)
+            else if(idx == GetLength() - 1)
+                RemoveLast();
+            else
             {
                 Node crnt = GetNode(idx - 1);
                 crnt.Next = GetNode(idx + 1);
             }
-            else
-                RemoveLast();
         }
         public void RemoveAtMultiple(int idx, int n)
         {
@@ -342,33 +298,40 @@ namespace LinkedListLibray
         public void Reverse()
         {
             int length = GetLength();
-            Node currentHead = GetNode(length - 1);
-            Node current = currentHead;
-            for (int k = length - 2; k >= 0; k--)
+            for (int i = 0; i < length / 2 ; i++)
             {
-                current.Next = GetNode(k);
-                current = current.Next;
+                for (int k = length - 1; k > length / 2; k--)
+                {
+                    Node tmp = GetNode(i);
+                    AddAt(i, Get(k));
+                    AddAt(k, Get(i));
+                    RemoveAt(i + 1);
+                    RemoveAt(k + 1);
+                }
             }
-            _head = currentHead;
         }
         public void Sort()
         {
-            Node t = _head;
-            int min;
             int length = GetLength();
-            for (int i = 0; i < length - 1; i++)
+            int idx = 0;
+            Node current = _head;
+            while (length != 0)
             {
-                min = i;
-                for (int j = i + 1; j < length ; j++)
+                int nax = current.Value;
+                for (int k = length - 1; k >= 0; k--)
                 {
-                    if (this[j] < this[min])
+                    Node tmpVal = GetNode(k);
+                    if (nax <= tmpVal.Value)
                     {
-                        min = j;
+                        nax = tmpVal.Value;
+                        idx = k;
                     }
                 }
-                Swap(i, min);
+                Node tmp = GetNode(length - 1);
+                Set(idx, tmp.Value);
+                Set(length - 1, nax);
+                length--;
             }
-            RemoveLast();
         }
         public void SortDesc()
         {
@@ -393,14 +356,7 @@ namespace LinkedListLibray
                 length--;
             }
         }
-        public void Swap(int firstIndex, int secondIndex)
-        {
-            AddAt(secondIndex, this[firstIndex]);
-            AddAt(firstIndex, this[secondIndex + 1]);
-            RemoveAt(firstIndex + 1);
-            RemoveAt(secondIndex + 1);
-        }
-        private Node GetNode(int index)
+        public Node GetNode(int index)
         {
             Node tmp = _head;
             for (int i = 0; i < index; i++)
@@ -449,6 +405,11 @@ namespace LinkedListLibray
                     return false;
             }
             return true;
+        }
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
         }
     }
 }
